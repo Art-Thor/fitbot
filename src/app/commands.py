@@ -1,6 +1,7 @@
 # src/app/commands.py
 
 from datetime import datetime
+import os
 from .config import settings
 from .models.challenge import Challenge, ActivityType, Result
 from .models.database import async_session
@@ -22,10 +23,10 @@ def register_commands(app):
     @app.command("/challenge")
     async def handle_challenge_command(ack, command, say):
         try:
-            logger.info(f"Received challenge command: {command}")
-            
-            # Acknowledge the command immediately
+            # Always acknowledge first
             await ack()
+            
+            logger.info(f"Received challenge command: {command}")
             
             # Get command text and normalize it
             text = command.get("text", "").strip()
@@ -204,7 +205,7 @@ def register_commands(app):
                         
                     # Upload to Slack
                     from slack_sdk.web.async_client import AsyncWebClient
-                    client = AsyncWebClient(token=settings.slack_bot_token)
+                    client = AsyncWebClient(token=os.environ["SLACK_BOT_TOKEN"])
                     
                     await client.files_upload_v2(
                         channel=channel,

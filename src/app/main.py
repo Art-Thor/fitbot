@@ -1,7 +1,6 @@
 # /Users/aholubov/Desktop/fittest/fitbot/src/app/main.py
 import os
 import asyncio
-import time
 from typing import Optional
 
 from fastapi import FastAPI # type: ignore
@@ -104,4 +103,4 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("src.app.main:app", host="0.0.0.0", port=8000)

@@ -1,4 +1,5 @@
 from slack_bolt.async_app import AsyncApp
+import os
 from .config import settings
 from .utils.logging import setup_logger
 from .workflow_handler import register_workflow_listener
@@ -13,8 +14,8 @@ logger = setup_logger(__name__, level=settings.log_level)
 # Initialize the Slack app with error handling
 try:
     bolt_app = AsyncApp(
-        token=settings.slack_bot_token,
-        signing_secret=settings.slack_signing_secret,
+        token=os.environ["SLACK_BOT_TOKEN"],
+        signing_secret=os.environ["SLACK_SIGNING_SECRET"],
         process_before_response=True,
         logger=logger,  # Add logger to app
         raise_error_for_unhandled_request=True  # Raise errors for unhandled requests
@@ -36,7 +37,7 @@ async def handle_message_events(body, say):
     """Handle message events from the workflow bot."""
     try:
         # Check if the message is from our workflow bot
-        if body.get("bot_id") != settings.workflow_bot_id:
+        if body.get("bot_id") != os.environ["WORKFLOW_BOT_ID"]:
             return
             
         # Get message details
@@ -104,7 +105,7 @@ async def handle_reaction(body, say):
         async with async_session() as db:
             # First, get the message text to find the user
             from slack_sdk.web.async_client import AsyncWebClient
-            client = AsyncWebClient(token=settings.slack_bot_token)
+            client = AsyncWebClient(token=os.environ["SLACK_BOT_TOKEN"])
             response = await client.conversations_history(
                 channel=channel,
                 latest=ts,
