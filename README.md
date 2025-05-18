@@ -1,0 +1,75 @@
+# FitBot
+
+A Slack bot for managing fitness challenges, built with FastAPI, Celery, and PostgreSQL.
+
+## Features
+
+- Process fitness challenge submissions via Slack Workflow Builder
+- OCR processing of screenshots for validation
+- Asynchronous task processing with Celery
+- PostgreSQL database for storing results
+- Docker containerization for easy deployment
+
+## Prerequisites
+
+- Docker and Docker Compose
+- Slack App with Socket Mode enabled
+- Tesseract OCR installed (included in Docker image)
+
+## Environment Variables
+
+Create a `.env` file in the project root with the following variables:
+
+```env
+# Slack Configuration
+SLACK_BOT_TOKEN=xoxb-your-bot-token
+SLACK_APP_TOKEN=xapp-your-app-token
+SLACK_SIGNING_SECRET=your-signing-secret
+WORKFLOW_BOT_ID=your-workflow-bot-id
+
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@db:5432/fitbot
+REDIS_URL=redis://redis:6379/0
+```
+
+## Running the Application
+
+1. Build and start the containers:
+```bash
+docker-compose up --build
+```
+
+2. The application will be available at `http://localhost:8000`
+
+## Architecture
+
+- `app/main.py`: FastAPI application with Socket Mode handler
+- `app/workflow_handler.py`: Handles messages from Workflow Bot
+- `app/tasks.py`: Celery tasks for processing submissions
+- `app/utils/ocr.py`: OCR processing for screenshots
+- `app/utils/parsing.py`: Metric parsing utilities
+- `app/models/`: SQLAlchemy models for database
+- `app/database.py`: Database connection and session management
+
+## Development
+
+The application uses:
+- FastAPI for the web server
+- Slack Bolt for Slack integration
+- Celery for async task processing
+- Redis for message broker
+- PostgreSQL for data storage
+- Tesseract for OCR processing
+- Docker for containerization
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 

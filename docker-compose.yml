@@ -1,0 +1,59 @@
+# /Users/aholubov/Desktop/fittest/fitbot/docker-compose.yml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/fitbot
+      - REDIS_URL=redis://redis:6379/0
+      - SLACK_BOT_TOKEN=xoxb-2130371976770-8887755450565-SgO4AgceEIqwBYBOkxfGrbtv
+      - SLACK_SIGNING_SECRET=b39a1353ed60262fff10b5e9a1d4a7b7
+      - SLACK_APP_TOKEN=xapp-1-A08S9GNK4GL-8887748301877-b3503fd40e892e9d007861fa39d2028c9d5fe2da0c1fd612a5c560c56a9d8abf
+      - WORKFLOW_BOT_ID=Wf08T7LK2EJV
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build:
+      context: .
+      dockerfile: celery/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/fitbot
+      - REDIS_URL=redis://redis:6379/0
+      - SLACK_BOT_TOKEN=xoxb-2130371976770-8887755450565-SgO4AgceEIqwBYBOkxfGrbtv
+      - SLACK_SIGNING_SECRET=b39a1353ed60262fff10b5e9a1d4a7b7
+      - SLACK_APP_TOKEN=xapp-1-A08S9GNK4GL-8887748301877-b3503fd40e892e9d007861fa39d2028c9d5fe2da0c1fd612a5c560c56a9d8abf
+      - WORKFLOW_BOT_ID=Wf08T7LK2EJV
+      - CELERY_BROKER_URL=${REDIS_URL}
+      - CELERY_RESULT_BACKEND=${REDIS_URL}
+    command: >
+      celery
+      -A src.app.tasks:celery_app
+      worker
+      -Q submissions
+      --loglevel=info
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=fitbot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
