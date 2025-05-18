@@ -1,23 +1,22 @@
 FROM python:3.11-slim
 
+WORKDIR /app
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    libtesseract-dev \
+    build-essential \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Set working directory
-WORKDIR /app
 
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy source code
 COPY src/ /app/src/
 
-# Set environment variables
-ENV PYTHONPATH=/app
+# Set Python path
+ENV PYTHONPATH=/app/src
 
 # Run the application
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] 

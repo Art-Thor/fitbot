@@ -6,14 +6,19 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+      - "9000:9000"  # Prometheus metrics port
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/fitbot
       - REDIS_URL=redis://redis:6379/0
-      - SLACK_BOT_TOKEN=xoxb-2130371976770-8887755450565-SgO4AgceEIqwBYBOkxfGrbtv
-      - SLACK_SIGNING_SECRET=b39a1353ed60262fff10b5e9a1d4a7b7
-      - SLACK_APP_TOKEN=xapp-1-A08S9GNK4GL-8887748301877-b3503fd40e892e9d007861fa39d2028c9d5fe2da0c1fd612a5c560c56a9d8abf
-      - WORKFLOW_BOT_ID=Wf08T7LK2EJV
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+      - SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
+      - WORKFLOW_BOT_ID=${WORKFLOW_BOT_ID}
       - LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app/src
+      - METRICS_PORT=9000
+      - CHALLENGE_CHANNELS=${CHALLENGE_CHANNELS:-}  # Use empty string as default
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     depends_on:
       - db
       - redis
@@ -25,15 +30,19 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/fitbot
       - REDIS_URL=redis://redis:6379/0
-      - SLACK_BOT_TOKEN=xoxb-2130371976770-8887755450565-SgO4AgceEIqwBYBOkxfGrbtv
-      - SLACK_SIGNING_SECRET=b39a1353ed60262fff10b5e9a1d4a7b7
-      - SLACK_APP_TOKEN=xapp-1-A08S9GNK4GL-8887748301877-b3503fd40e892e9d007861fa39d2028c9d5fe2da0c1fd612a5c560c56a9d8abf
-      - WORKFLOW_BOT_ID=Wf08T7LK2EJV
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+      - SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
+      - WORKFLOW_BOT_ID=${WORKFLOW_BOT_ID}
       - CELERY_BROKER_URL=${REDIS_URL}
       - CELERY_RESULT_BACKEND=${REDIS_URL}
+      - LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app/src
+      - METRICS_PORT=9000
+      - CHALLENGE_CHANNELS=${CHALLENGE_CHANNELS:-}  # Use empty string as default
     command: >
       celery
-      -A src.app.tasks:celery_app
+      -A app.tasks:celery_app
       worker
       -Q submissions
       --loglevel=info
