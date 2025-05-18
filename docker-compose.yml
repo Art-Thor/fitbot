@@ -14,6 +14,7 @@ services:
       - SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
       - WORKFLOW_BOT_ID=${WORKFLOW_BOT_ID}
       - LOG_LEVEL=DEBUG
+    command: uvicorn src.app.main:app --host 0.0.0.0 --port 8000
     depends_on:
       - db
       - redis
@@ -31,6 +32,7 @@ services:
       - WORKFLOW_BOT_ID=${WORKFLOW_BOT_ID}
       - CELERY_BROKER_URL=${REDIS_URL}
       - CELERY_RESULT_BACKEND=${REDIS_URL}
+      - LOG_LEVEL=DEBUG
     command: >
       celery
       -A src.app.tasks:celery_app

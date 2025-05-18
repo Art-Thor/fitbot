@@ -33,7 +33,7 @@ async def custom_error_handler(error, body, logger):
     return {"text": "❌ An error occurred while processing your request. Please try again."}
 
 @bolt_app.event("message")
-async def handle_message_events(body, say):
+async def handle_message_events(body, say, logger):
     """Handle message events from the workflow bot."""
     try:
         # Check if the message is from our workflow bot
@@ -90,7 +90,7 @@ async def handle_message_events(body, say):
         logger.error(f"Error handling message event: {e}")
 
 @bolt_app.event("reaction_added")
-async def handle_reaction(body, say):
+async def handle_reaction(body, say, logger):
     """Handle reactions for admin operations."""
     try:
         # Only process specific reactions

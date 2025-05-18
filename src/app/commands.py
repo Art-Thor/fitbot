@@ -21,12 +21,11 @@ CHANNEL_ACTIVITY = {
 
 def register_commands(app):
     @app.command("/challenge")
-    async def handle_challenge_command(ack, command, say):
+    async def handle_challenge_command(ack, command, say, logger):
         try:
-            # Always acknowledge first
+            # 1) Immediately acknowledge the command to prevent dispatch_failed
             await ack()
-            
-            logger.info(f"Received challenge command: {command}")
+            logger.info(f"Received /challenge command: {command}")
             
             # Get command text and normalize it
             text = command.get("text", "").strip()
