@@ -52,6 +52,15 @@ def register_commands(app):
             logger.info(f"Processing command: subcommand={subcommand}, channel={channel}, channel_name={channel_name}")
             
             # Check if this is a challenge channel
+            if settings.challenge_channels and channel not in settings.challenge_channels:
+                await say(
+                    "❌ This channel is not configured for a challenge. "
+                    "Please use this command in a challenge channel "
+                    f"(e.g., <#{settings.challenge_channels[0]}>)."
+                )
+                return
+            
+            # Check if this is a challenge channel
             activity = None
             for suffix, act in CHANNEL_ACTIVITY.items():
                 if channel_name.endswith(f"-{suffix}"):

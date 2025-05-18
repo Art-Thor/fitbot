@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+      - "9000:9000"  # Prometheus metrics port
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/fitbot
       - REDIS_URL=redis://redis:6379/0
@@ -14,7 +15,10 @@ services:
       - SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
       - WORKFLOW_BOT_ID=${WORKFLOW_BOT_ID}
       - LOG_LEVEL=DEBUG
-    command: uvicorn src.app.main:app --host 0.0.0.0 --port 8000
+      - PYTHONPATH=/app/src
+      - METRICS_PORT=9000
+      - CHALLENGE_CHANNELS=${CHALLENGE_CHANNELS:-}  # Use empty string as default
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     depends_on:
       - db
       - redis
@@ -33,9 +37,12 @@ services:
       - CELERY_BROKER_URL=${REDIS_URL}
       - CELERY_RESULT_BACKEND=${REDIS_URL}
       - LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app/src
+      - METRICS_PORT=9000
+      - CHALLENGE_CHANNELS=${CHALLENGE_CHANNELS:-}  # Use empty string as default
     command: >
       celery
-      -A src.app.tasks:celery_app
+      -A app.tasks:celery_app
       worker
       -Q submissions
       --loglevel=info

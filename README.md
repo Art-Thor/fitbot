@@ -28,9 +28,21 @@ SLACK_APP_TOKEN=xapp-your-app-token
 SLACK_SIGNING_SECRET=your-signing-secret
 WORKFLOW_BOT_ID=your-workflow-bot-id
 
+# Challenge Channels
+# Comma-separated list of Slack channel IDs where /challenge commands are allowed
+# Example: CHALLENGE_CHANNELS=C08SM8NESGJ,C123ABC456D
+# Leave empty to allow commands in any channel
+CHALLENGE_CHANNELS=C08SM8NESGJ
+
 # Database Configuration
 DATABASE_URL=postgresql://postgres:postgres@db:5432/fitbot
 REDIS_URL=redis://redis:6379/0
+
+# Logging
+LOG_LEVEL=DEBUG
+
+# Metrics
+METRICS_PORT=9000
 ```
 
 ## Running the Application
