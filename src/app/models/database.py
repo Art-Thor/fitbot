@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 from .base import Base
 from ..config import settings
 
@@ -17,4 +18,14 @@ async def init_db():
 
 async def get_session() -> AsyncSession:
     async with async_session() as session:
-        yield session 
+        yield session
+
+async def check_db_connection() -> bool:
+    """Check if the database connection is working."""
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+            return True
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return False 

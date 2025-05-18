@@ -194,15 +194,25 @@ async def handle_challenge_command(ack, command, say, logger):
             return
         # ... rest of the start command handling ...
     elif subcommand == "stop":
-        # ... stop command handling ...
+        # Stop the current challenge
+        await say("Stopping challenge...")
+        # TODO: Implement stop logic
     elif subcommand == "status":
-        # ... status command handling ...
+        # Show current challenge status
+        await say("Current challenge status:")
+        # TODO: Implement status logic
     elif subcommand == "leaderboard":
-        # ... leaderboard command handling ...
+        # Show leaderboard
+        await say("Challenge leaderboard:")
+        # TODO: Implement leaderboard logic
     elif subcommand == "export":
-        # ... export command handling ...
+        # Export challenge data
+        await say("Exporting challenge data...")
+        # TODO: Implement export logic
     elif subcommand == "recent":
-        # ... recent command handling ...
+        # Show recent submissions
+        await say("Recent submissions:")
+        # TODO: Implement recent submissions logic
     else:
         await say("Unknown subcommand. Available commands: start, stop, status, leaderboard, export, recent")
 

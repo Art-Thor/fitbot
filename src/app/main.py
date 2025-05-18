@@ -2,6 +2,7 @@
 import os
 import asyncio
 import uvicorn
+import multiprocessing
 from typing import Optional
 import logging
 
@@ -28,6 +29,10 @@ socket_handler: Optional[AsyncSocketModeHandler] = None
 
 # Initialize Socket Mode handler
 handler = AsyncSocketModeHandler(bolt_app, os.environ["SLACK_APP_TOKEN"])
+
+def run_slack_app():
+    """Run the Slack Bolt app in a separate process."""
+    bolt_app.start()
 
 @app.get("/health")
 async def health_check():
@@ -103,8 +108,10 @@ async def on_startup():
         # 5) Log configured challenge channels
         logger.info(f"💡 Configured challenge_channels = {settings.challenge_channels!r}")
         
-        # 6) Start Socket Mode handler
-        await bolt_app.start()
+        # 6) Start Slack Bolt app in a separate process
+        slack_process = multiprocessing.Process(target=run_slack_app)
+        slack_process.start()
+        logger.info("Started Slack Bolt app in a separate process")
         
         logger.info("Application startup completed successfully")
     except Exception as e:
