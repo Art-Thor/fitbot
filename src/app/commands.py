@@ -1,7 +1,7 @@
 # src/app/commands.py
 
 from datetime import datetime
-from slack_bolt.async_app import AsyncApp
+import os
 from .config import settings
 from .models.challenge import Challenge, ActivityType, Result
 from .models.database import async_session
@@ -19,14 +19,13 @@ CHANNEL_ACTIVITY = {
     "walking-challenge":  ActivityType.WALKING,
 }
 
-def register_commands(app: AsyncApp):
+def register_commands(app):
     @app.command("/challenge")
-    async def handle_challenge_command(ack, command, say):
+    async def handle_challenge_command(ack, command, say, logger):
         try:
-            logger.info(f"Received challenge command: {command}")
-            
-            # Acknowledge the command immediately
+            # 1) Immediately acknowledge the command to prevent dispatch_failed
             await ack()
+            logger.info(f"Received /challenge command: {command}")
             
             # Get command text and normalize it
             text = command.get("text", "").strip()
@@ -51,6 +50,15 @@ def register_commands(app: AsyncApp):
             channel_name = command.get("channel_name", "")
             
             logger.info(f"Processing command: subcommand={subcommand}, channel={channel}, channel_name={channel_name}")
+            
+            # Check if this is a challenge channel
+            if settings.challenge_channels and channel not in settings.challenge_channels:
+                await say(
+                    "❌ This channel is not configured for a challenge. "
+                    "Please use this command in a challenge channel "
+                    f"(e.g., <#{settings.challenge_channels[0]}>)."
+                )
+                return
             
             # Check if this is a challenge channel
             activity = None
@@ -141,7 +149,7 @@ def register_commands(app: AsyncApp):
                     )).scalar()
                     
                     msg = (
-                        f"�� *{ch.activity_type.value.title()} Challenge*\n"
+                        f" *{ch.activity_type.value.title()} Challenge*\n"
                         f"• Period: {ch.start_date.date()} to {ch.end_date.date()}\n"
                         f"• Participants: {participants}\n"
                         f"• Total submissions: {submissions}"
@@ -205,7 +213,7 @@ def register_commands(app: AsyncApp):
                         
                     # Upload to Slack
                     from slack_sdk.web.async_client import AsyncWebClient
-                    client = AsyncWebClient(token=settings.slack_bot_token)
+                    client = AsyncWebClient(token=os.environ["SLACK_BOT_TOKEN"])
                     
                     await client.files_upload_v2(
                         channel=channel,

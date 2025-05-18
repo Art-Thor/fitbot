@@ -1,8 +1,11 @@
 from prometheus_client import Counter, Histogram, start_http_server
+import os
 from .config import settings
 from .utils.logging import setup_logger
 
-logger = setup_logger(__name__)
+logger = setup_logger(__name__, level=settings.log_level)
+
+METRICS_PORT = int(os.environ.get("METRICS_PORT", 9000))
 
 # Task metrics
 task_total = Counter(
@@ -55,10 +58,10 @@ ollama_duration = Histogram(
 )
 
 def start_metrics_server():
-    """Start the Prometheus metrics server."""
+    """Start Prometheus metrics server on a separate port."""
     try:
-        start_http_server(8000)
-        logger.info("Started Prometheus metrics server on port 8000")
+        start_http_server(METRICS_PORT)
+        logger.info(f"Started Prometheus metrics server on port {METRICS_PORT}")
     except Exception as e:
         logger.error(f"Failed to start metrics server: {e}")
-        raise 
+        # Don't crash, just log error 

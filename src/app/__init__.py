@@ -1,0 +1,3 @@
+"""
+FitBot application package.
+""" 
