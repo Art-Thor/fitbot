@@ -5,7 +5,6 @@ import time
 from typing import Optional
 
 from fastapi import FastAPI # type: ignore
-from slack_bolt.async_app import AsyncApp # type: ignore
 from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler # type: ignore
 from alembic.config import Config # type: ignore
 from alembic import command
@@ -14,21 +13,13 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from .config import settings
 from .utils.logging import setup_logger
-from .slack_app import register_handlers
+from .slack_app import bolt_app
 from .metrics import start_metrics_server
 
 logger = setup_logger(__name__, level=settings.log_level)
 
 # FastAPI app
 app = FastAPI()
-
-# Bolt app
-bolt_app = AsyncApp(
-    token=settings.slack_bot_token,
-    signing_secret=settings.slack_signing_secret,
-    process_before_response=True,
-    logger=logger
-)
 
 # Global socket handler
 socket_handler: Optional[AsyncSocketModeHandler] = None
@@ -81,22 +72,6 @@ def init_db():
         logger.error(f"Failed to initialize database: {e}")
         # Don't crash, just log error
 
-async def start_slack_app():
-    """Start the Slack app in socket mode."""
-    try:
-        # Register all handlers
-        register_handlers(bolt_app)
-        
-        # Start socket mode handler
-        global socket_handler
-        socket_handler = AsyncSocketModeHandler(bolt_app, settings.slack_app_token)
-        await socket_handler.start_async()
-        logger.info("Socket Mode handler started successfully")
-        
-    except Exception as e:
-        logger.error(f"Failed to start Slack app: {e}")
-        # Don't crash, just log error
-
 @app.on_event("startup")
 async def startup_event():
     try:
@@ -109,8 +84,11 @@ async def startup_event():
         # 3) Start metrics server
         start_metrics_server()
         
-        # 4) Start Slack app
-        asyncio.create_task(start_slack_app())
+        # 4) Start Slack app in socket mode
+        global socket_handler
+        socket_handler = AsyncSocketModeHandler(bolt_app, settings.slack_app_token)
+        asyncio.create_task(socket_handler.start_async())
+        logger.info("Socket Mode handler started successfully")
         
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
@@ -123,3 +101,7 @@ async def shutdown_event():
         await socket_handler.close()
         logger.info("Socket Mode handler closed")
     logger.info("Application shutdown complete")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

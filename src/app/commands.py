@@ -1,7 +1,6 @@
 # src/app/commands.py
 
 from datetime import datetime
-from slack_bolt.async_app import AsyncApp
 from .config import settings
 from .models.challenge import Challenge, ActivityType, Result
 from .models.database import async_session
@@ -19,7 +18,7 @@ CHANNEL_ACTIVITY = {
     "walking-challenge":  ActivityType.WALKING,
 }
 
-def register_commands(app: AsyncApp):
+def register_commands(app):
     @app.command("/challenge")
     async def handle_challenge_command(ack, command, say):
         try:
@@ -141,7 +140,7 @@ def register_commands(app: AsyncApp):
                     )).scalar()
                     
                     msg = (
-                        f"�� *{ch.activity_type.value.title()} Challenge*\n"
+                        f" *{ch.activity_type.value.title()} Challenge*\n"
                         f"• Period: {ch.start_date.date()} to {ch.end_date.date()}\n"
                         f"• Participants: {participants}\n"
                         f"• Total submissions: {submissions}"
